@@ -14,7 +14,7 @@
    <string>client</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QPushButton" name="enviar">
+   <widget class="QPushButton" name="enviarNombrePlayer">
     <property name="geometry">
      <rect>
       <x>390</x>

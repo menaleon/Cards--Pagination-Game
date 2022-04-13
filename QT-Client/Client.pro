@@ -26,10 +26,12 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        client.cpp
+        client.cpp \
+    adapter.cpp
 
 HEADERS += \
-        client.h
+        client.h \
+    adapter.h
 
 FORMS += \
         client.ui

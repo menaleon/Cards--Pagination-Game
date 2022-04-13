@@ -1,25 +1,32 @@
 #include "client.h"
-#include "ui_client.h"
 
-using namespace std;
-
-//int counter = 0;
 const char filaIndex[] = "fila";
 const char columnaIndex[] = "columna";
-//QPushButton* matrizBotones[6][6];
 
-client::client(QWidget *parent) :
+client::client(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::client)
 {
+    crear_interfaz_inicial();
+    responseFromServer_Handler = new adapter();
+}
+
+void client::crear_interfaz_inicial(){
     ui->setupUi(this);
     ui->plainTextEdit->setReadOnly(true);
-
     ui->player2Label->hide();
     ui->nameP1->hide();
     ui->nameP2->hide();
     ui->playingLabel->hide();
     ui->turnoLabel->hide();
+
+    QTcpSocket* _socket = crear_socket();
+
+    connect(_socket, SIGNAL(readyRead()), this, SLOT(leer_mensaje()));
+
+}
+
+QTcpSocket* client::crear_socket(){
 
     _socket = new QTcpSocket(this);
     _socket->connectToHost("localhost", 4050);
@@ -27,12 +34,14 @@ client::client(QWidget *parent) :
     if(_socket->waitForConnected(4050)){
 
         ui->plainTextEdit->appendPlainText("You and server are now connected :D");
+
     }else{
 
-        ui->plainTextEdit->appendPlainText("Could not connect to server :( Exit and try again");
+        ui->plainTextEdit->appendPlainText("Could not connect to server :( "
+                                           "Exit and try again");
 
-        ui->enviar->hide();
-        ui->enviar->deleteLater();
+        ui->enviarNombrePlayer->hide();
+        ui->enviarNombrePlayer->deleteLater();
         ui->lineEdit->hide();
         ui->lineEdit->deleteLater();
         ui->playerLabel->hide();
@@ -40,21 +49,10 @@ client::client(QWidget *parent) :
 
     }
 
-    QObject::connect(_socket, SIGNAL(readyRead()), this, SLOT(leer()));
-
+    return _socket;
 }
 
-void client::leer(){
-    QByteArray buffer;
-    buffer.resize(_socket->bytesAvailable());
-    _socket->read(buffer.data(), buffer.size());
-    QString mensaje = QString(buffer);
-    qDebug()<<mensaje<<endl;
-
-    //ui->plainTextEdit->appendPlainText(QString(buffer));
-}
-
-void client::generar_interfaz(){
+void client::crear_interfaz_juego(){
     ui->plainTextEdit->hide();
     ui->plainTextEdit->deleteLater();
 
@@ -73,51 +71,44 @@ void client::generar_interfaz(){
             QString filaButon = (QString) filas;
 
             matrizBotones[columnas][filas] = new QPushButton("Button", this);
-            matrizBotones[columnas][filas]->setGeometry(QRect(QPoint((columnas+1)*50 + (columnas+1)*15, (filas+1)*50
-                                                                     + (filas+1)*10), QSize(50,50)));
+            matrizBotones[columnas][filas]->setGeometry(QRect(QPoint((columnas+1)*50 +
+                                                                     (columnas+1)*15,
+                                                                     (filas+1)*50 +
+                                                                     (filas+1)*10),
+                                                                      QSize(50,50)));
 
             matrizBotones[columnas][filas]->setProperty(filaIndex, filas);
             matrizBotones[columnas][filas]->setProperty(columnaIndex, columnas);
 
-            connect(matrizBotones[columnas][filas], SIGNAL(clicked()), this, SLOT(carta_presionada()));
+            connect(matrizBotones[columnas][filas], SIGNAL(clicked()), this,
+                                    SLOT(obtenerIndices_cartaPresionada()));
+
             matrizBotones[columnas][filas]->setVisible(true);
         }
     }
 }
 
-client::~client()
-{
-    delete ui;
+void client::leer_mensaje(){
+
+    QByteArray buffer;
+    buffer.resize(_socket->bytesAvailable());
+    _socket->read(buffer.data(), buffer.size());
+    QString mensaje = QString(buffer);
+
+    QMap<QString, int> responseType =
+            responseFromServer_Handler->
+            handle_message(mensaje, counter_cartasPresionadas);
+
+    qDebug()<<responseType.first()<<endl;
 }
 
-void client::on_enviar_clicked(){
-
-    if(counter == 1){
-        ui->enviar->hide();
-        ui->enviar->deleteLater();
-
-        ui->playerLabel->hide();
-        ui->playerLabel->move(50, 430);
-
-        ui->lineEdit->hide();
-        ui->lineEdit->deleteLater();
-        //ui->lineEdit->move(100,300);
-
-        generar_interfaz();
-    }
-
-    ui->playerLabel->setText("Player 2: ");
-
-    const char* message = ui->lineEdit->text().toLatin1().data();
-    qint64 msgSize = ui->lineEdit->text().size();
-    _socket->write(message, msgSize);
-    ui->lineEdit->clear();
-
-    counter +=1;
-
+void client::enviar_al_server(QString message){
+    _socket->write(message.toLatin1().data(), message.size());
 }
 
-void client::carta_presionada(){
+void client::obtenerIndices_cartaPresionada(){
+
+    counter_cartasPresionadas +=1;
 
     QString fila = sender()->property(filaIndex).toString();
     QString columna = sender()->property(columnaIndex).toString();
@@ -126,5 +117,58 @@ void client::carta_presionada(){
     mensaje.append(fila);
     mensaje.append(columna);
 
-    _socket->write(mensaje.toLatin1().data(), mensaje.size());
+    enviar_al_server(mensaje);
 }
+
+bool client::set_TurnoActual(int player){
+
+    if(!(player == 1) || !(player == 2)){
+        return false;
+    }
+
+    turnoActual = player;
+    ui->turnoLabel->setText((QString) turnoActual);
+
+    return true;
+}
+
+void client::on_enviarNombrePlayer_clicked()
+{
+    if(counter == 1){
+        ui->enviarNombrePlayer->hide();
+        ui->enviarNombrePlayer->deleteLater();
+
+        ui->playerLabel->hide();
+        ui->playerLabel->move(50, 430);
+
+        ui->lineEdit->hide();
+        ui->lineEdit->deleteLater();
+
+        crear_interfaz_juego();
+    }
+
+    ui->playerLabel->setText("Player 2: ");
+
+    QString nombre_player = ui->lineEdit->text();
+
+    enviar_al_server(nombre_player);
+
+    ui->lineEdit->clear();
+
+    counter +=1;
+}
+
+
+
+
+
+
+
+client::~client()
+{
+    delete ui;
+}
+
+
+
+

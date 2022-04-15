@@ -125,6 +125,32 @@
      <string>TextLabel</string>
     </property>
    </widget>
+   <widget class="QLabel" name="comparacionLabel">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>390</y>
+      <width>201</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Comparacion</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="juegoFInalizado">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>450</y>
+      <width>161</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>El juego ha terminado</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

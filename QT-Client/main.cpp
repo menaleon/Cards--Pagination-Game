@@ -1,6 +1,6 @@
 #include "client.h"
 #include <QApplication>
-#include "adapter.h"
+#include "handler.h"
 
 int main(int argc, char *argv[])
 {

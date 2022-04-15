@@ -2,13 +2,20 @@
 
 const char filaIndex[] = "fila";
 const char columnaIndex[] = "columna";
+const char ganada[] = "CartaGanada";
 
 client::client(QWidget *parent):
     QMainWindow(parent),
     ui(new Ui::client)
 {
     crear_interfaz_inicial();
-    responseFromServer_Handler = new adapter();
+
+    auto client = this;
+    auto interfaz = this->ui;
+
+    responseFromServer_Handler = new handler(interfaz);
+
+
 }
 
 void client::crear_interfaz_inicial(){
@@ -19,6 +26,8 @@ void client::crear_interfaz_inicial(){
     ui->nameP2->hide();
     ui->playingLabel->hide();
     ui->turnoLabel->hide();
+    ui->comparacionLabel->hide();
+    ui->juegoFInalizado->hide();
 
     QTcpSocket* _socket = crear_socket();
 
@@ -55,22 +64,24 @@ QTcpSocket* client::crear_socket(){
 void client::crear_interfaz_juego(){
     ui->plainTextEdit->hide();
     ui->plainTextEdit->deleteLater();
-
     ui->playerLabel->show();
-
     ui->player2Label->show();
     ui->nameP1->show();
     ui->nameP2->show();
     ui->playingLabel->show();
     ui->turnoLabel->show();
 
+    rellenar_matrizBotones();
+}
+
+void client::rellenar_matrizBotones(){
+
     for(int columnas = 0; columnas<6; columnas++){
         for(int filas = 0; filas<6; filas++){
 
             QString indices = QString{"(%1,%2)"}.arg(columnas).arg(filas);
-            QString filaButon = (QString) filas;
 
-            matrizBotones[columnas][filas] = new QPushButton("Button", this);
+            matrizBotones[columnas][filas] = new QPushButton("ButtonText", this);
             matrizBotones[columnas][filas]->setGeometry(QRect(QPoint((columnas+1)*50 +
                                                                      (columnas+1)*15,
                                                                      (filas+1)*50 +
@@ -79,13 +90,17 @@ void client::crear_interfaz_juego(){
 
             matrizBotones[columnas][filas]->setProperty(filaIndex, filas);
             matrizBotones[columnas][filas]->setProperty(columnaIndex, columnas);
+            matrizBotones[columnas][filas]->setProperty(ganada, false);
+
+            matrizBotones[columnas][filas]->setText(indices);
+            matrizBotones[columnas][filas]->setVisible(true);
 
             connect(matrizBotones[columnas][filas], SIGNAL(clicked()), this,
                                     SLOT(obtenerIndices_cartaPresionada()));
-
-            matrizBotones[columnas][filas]->setVisible(true);
         }
     }
+
+
 }
 
 void client::leer_mensaje(){
@@ -95,11 +110,12 @@ void client::leer_mensaje(){
     _socket->read(buffer.data(), buffer.size());
     QString mensaje = QString(buffer);
 
-    QMap<QString, int> responseType =
-            responseFromServer_Handler->
+    int caso = responseFromServer_Handler->
             handle_message(mensaje, counter_cartasPresionadas);
 
-    qDebug()<<responseType.first()<<endl;
+    qDebug()<<"CASO "<<caso<<endl;
+    enable_botonEnMatriz(caso);
+
 }
 
 void client::enviar_al_server(QString message){
@@ -108,10 +124,17 @@ void client::enviar_al_server(QString message){
 
 void client::obtenerIndices_cartaPresionada(){
 
+
     counter_cartasPresionadas +=1;
 
     QString fila = sender()->property(filaIndex).toString();
     QString columna = sender()->property(columnaIndex).toString();
+
+    int filaInt = fila.toInt();
+    int columnaInt = columna.toInt();
+    matrizBotones[columnaInt][filaInt]->setEnabled(false);
+
+    set_botonEnHandler(columnaInt, filaInt);
 
     QString mensaje;
     mensaje.append(fila);
@@ -120,16 +143,82 @@ void client::obtenerIndices_cartaPresionada(){
     enviar_al_server(mensaje);
 }
 
-bool client::set_TurnoActual(int player){
+void client::set_botonEnHandler(int columna, int fila){
 
-    if(!(player == 1) || !(player == 2)){
-        return false;
+    if(counter_cartasPresionadas %2 == 0){
+
+        responseFromServer_Handler->columna2 = columna;
+        responseFromServer_Handler->fila2 = fila;
+
+    }else{
+
+        responseFromServer_Handler->columna1 = columna;
+        responseFromServer_Handler->fila1 = fila;
     }
+}
 
-    turnoActual = player;
-    ui->turnoLabel->setText((QString) turnoActual);
+void client::enable_botonEnMatriz(int caso){
 
-    return true;
+    int f1 = responseFromServer_Handler->fila1;
+    int c1 = responseFromServer_Handler->columna1;
+    int f2 = responseFromServer_Handler->fila2;
+    int c2 = responseFromServer_Handler->columna2;
+
+    switch (caso) {
+
+    case 3: // CARTAS IGUALES: establece botones como "ganados"
+
+        matrizBotones[c1][f1]->property(ganada) = true;
+        matrizBotones[c2][f2]->property(ganada) = true;
+        cartasGanadas += 2;
+
+        check_estadoJuego();
+        set_turnoActual(0);
+
+        break;
+
+    case 4: // CARTAS DISTINTAS: habilita los botones nuevamente
+        matrizBotones[c1][f1]->setEnabled(true);
+        matrizBotones[c2][f2]->setEnabled(true);
+        set_turnoActual(0);
+        break;
+
+    case 1:
+        set_turnoActual(1);
+        break;
+    case 2:
+        set_turnoActual(2);
+        break;
+
+    default:
+        break;
+    }
+}
+
+void client::check_estadoJuego(){
+
+    if(cartasGanadas == 36){
+        ui->juegoFInalizado->show();
+    }
+}
+
+void client::set_turnoActual(int caso){
+
+    int player = ui->turnoLabel->text().toInt();
+
+    if(caso == 0){
+        if(player == 1){
+            ui->turnoLabel->setText("2");
+        }else{
+            ui->turnoLabel->setText("1");
+        }
+    }else{
+        if(caso == 2){
+            ui->turnoLabel->setText("2");
+        }else{
+            ui->turnoLabel->setText("1");
+        }
+    }
 }
 
 void client::on_enviarNombrePlayer_clicked()
@@ -157,12 +246,6 @@ void client::on_enviarNombrePlayer_clicked()
 
     counter +=1;
 }
-
-
-
-
-
-
 
 client::~client()
 {

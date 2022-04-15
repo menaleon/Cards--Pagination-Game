@@ -6,12 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>662</width>
+    <width>430</width>
     <height>409</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>server</string>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QPlainTextEdit" name="plainTextEdit">
@@ -19,7 +22,7 @@
      <rect>
       <x>73</x>
       <y>39</y>
-      <width>421</width>
+      <width>121</width>
       <height>161</height>
      </rect>
     </property>
@@ -29,7 +32,7 @@
      <rect>
       <x>82</x>
       <y>280</y>
-      <width>361</width>
+      <width>101</width>
       <height>25</height>
      </rect>
     </property>
@@ -37,7 +40,7 @@
    <widget class="QPushButton" name="send">
     <property name="geometry">
      <rect>
-      <x>510</x>
+      <x>240</x>
       <y>280</y>
       <width>89</width>
       <height>25</height>
@@ -47,13 +50,65 @@
      <string>Enviar</string>
     </property>
    </widget>
+   <widget class="QLabel" name="nameP1">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>50</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="nameP2">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>90</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>50</y>
+      <width>21</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>J1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>90</y>
+      <width>31</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>J2</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>662</width>
+     <width>430</width>
      <height>22</height>
     </rect>
    </property>

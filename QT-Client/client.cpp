@@ -19,7 +19,9 @@ client::client(QWidget *parent):
 }
 
 void client::crear_interfaz_inicial(){
+
     ui->setupUi(this);
+    this->setStyleSheet("background-color: lightgreen;");
     ui->plainTextEdit->setReadOnly(true);
     ui->player2Label->hide();
     ui->nameP1->hide();
@@ -79,7 +81,7 @@ void client::rellenar_matrizBotones(){
     for(int columnas = 0; columnas<6; columnas++){
         for(int filas = 0; filas<6; filas++){
 
-            QString indices = QString{"(%1,%2)"}.arg(columnas).arg(filas);
+            QString indices = QString{"(%1,%2)"}.arg(filas).arg(columnas);
 
             matrizBotones[columnas][filas] = new QPushButton("ButtonText", this);
             matrizBotones[columnas][filas]->setGeometry(QRect(QPoint((columnas+1)*50 +
@@ -124,6 +126,7 @@ void client::enviar_al_server(QString message){
 
 void client::obtenerIndices_cartaPresionada(){
 
+    ui->comparacionLabel->hide();
 
     counter_cartasPresionadas +=1;
 
@@ -206,6 +209,7 @@ void client::set_turnoActual(int caso){
 
     int player = ui->turnoLabel->text().toInt();
 
+    qDebug()<<caso<<endl;
     if(caso == 0){
         if(player == 1){
             ui->turnoLabel->setText("2");

@@ -30,6 +30,7 @@ private slots:
     void crear_interfaz_inicial();
     void crear_interfaz_juego();
     void rellenar_matrizBotones();
+
     void set_botonEnHandler(int columna, int fila);
     void enable_botonEnMatriz(int caso);
     void obtenerIndices_cartaPresionada();

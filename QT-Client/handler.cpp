@@ -17,6 +17,7 @@ int handler::handle_message(QString mensaje, int counter_cartasPresionadas){
     if(dosCartas_clicked){
 
        set_direccionImagen(mensaje, 2);
+       //interfaz->nameP1->setText("Hola");
 
        return set_comparacionCartas(mensaje); // RETURN 3 o 4
 

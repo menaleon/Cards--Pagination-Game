@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include<QTcpServer>
 #include<QTcpSocket>
+#include "pagedmatrix.h"
 
 namespace Ui {
 class server;
@@ -39,6 +40,8 @@ private:
 
     int columna2;
     int fila2;
+
+    PagedMatrix* pagedMatrix;
 };
 
 #endif // SERVER_H

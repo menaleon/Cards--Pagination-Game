@@ -13,6 +13,8 @@ server::server(QWidget *parent) :
     this->setStyleSheet("background-color: lightblue;");
     ui->plainTextEdit->setReadOnly(true);
 
+    pagedMatrix = new PagedMatrix();
+
     _server = new QTcpServer(this);
     _server->listen(QHostAddress::Any, 4050);
     _socket = new QTcpSocket(this);
@@ -86,6 +88,11 @@ void server::on_send_clicked()
 
     ui->plainTextEdit->appendPlainText(ui->lineEdit->text());
     ui->lineEdit->clear();
+
+    pagedMatrix->crear_disco();
+    pagedMatrix->escribir_en_Disco();
+    pagedMatrix->leer_disco();
+
 }
 
 void server::enviar_al_cliente(QString message){

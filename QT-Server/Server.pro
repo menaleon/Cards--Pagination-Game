@@ -26,10 +26,12 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        server.cpp
+        server.cpp \
+    pagedmatrix.cpp
 
 HEADERS += \
-        server.h
+        server.h \
+    pagedmatrix.h
 
 FORMS += \
         server.ui

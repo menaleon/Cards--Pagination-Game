@@ -84,14 +84,26 @@ server::~server()
 void server::on_send_clicked()
 {
 
-    enviar_al_cliente(ui->lineEdit->text());
+    //enviar_al_cliente(ui->lineEdit->text());
 
     ui->plainTextEdit->appendPlainText(ui->lineEdit->text());
     ui->lineEdit->clear();
 
-    pagedMatrix->crear_disco();
-    pagedMatrix->escribir_en_Disco();
-    pagedMatrix->leer_disco();
+    //pagedMatrix->llamar_matrizDisco(); OPCION 1
+
+    //OPCION 2
+
+    //pagedMatrix->llenar_array();
+    Carta all_Cards[3] = {{1,1,1,false},{2,2,2,false},{3,3,3,false}};
+    Carta all_Cards2[3] = {{1,1,1,true},{2,2,2,false},{3,3,3,false}};
+
+    pagedMatrix->generar_archivo(all_Cards);
+    pagedMatrix->leer_arrayArchivo();
+
+    //pagedMatrix->update_array(2);
+
+    pagedMatrix->generar_archivo(all_Cards2);
+    pagedMatrix->leer_arrayArchivo();
 
 }
 

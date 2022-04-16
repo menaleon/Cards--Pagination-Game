@@ -5,6 +5,8 @@
 #include<QTcpServer>
 #include<QTcpSocket>
 #include "pagedmatrix.h"
+#include "card.h"
+
 
 namespace Ui {
 class server;

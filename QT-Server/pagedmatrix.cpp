@@ -1,8 +1,5 @@
 #include "pagedmatrix.h"
-#include <QDebug>
 
-int cont = 0;
-int contLeer = 0;
 
 PagedMatrix::PagedMatrix()
 {
@@ -11,6 +8,11 @@ PagedMatrix::PagedMatrix()
 
 
 void PagedMatrix::leer_arrayArchivo(){
+
+    //investigar luego si los punteros creados se borran o no
+    // si mal no recuerdo sí se borran porque al terminar
+    //   --->   se borra todo el stack frame de esta función
+
     Carta temp[3];
 
     disco.open("cartas2.bin", ios::in | ios::binary);
@@ -20,17 +22,29 @@ void PagedMatrix::leer_arrayArchivo(){
     disco.close();
 
     for(Carta& c : temp){
-        qDebug()<<"Lei"<<disco.tellg()<<c.row<<c.column<<c.type<<c.ganada<<endl;
+        Card* temporal = new Card(c.row, c.column, c.type, c.ganada);
+        cargadas.push_back(*temporal);
+        qDebug()<<"Leí"<<disco.tellg()<<c.row<<c.column<<c.type<<c.ganada<<endl;
 
+        free(temporal); // por si acaso
     }
+
+
+
+   for(int i = 0; i< cargadas.size(); i++){
+       cargadas.at(i).show();
+   }
+
+   cargadas.clear();
+   //free(temp); investigar esto
+
 }
 
-//llenar_array, generar archivo, update array, generar archivo, guardar en nueva struct
-void PagedMatrix::generar_archivo(Carta all_cards[3]){
+void PagedMatrix::escribir_archivo(Carta all_cards[3]){
 
 
     disco.open("cartas2.bin", ios::binary | ios::out);
-    disco.write(reinterpret_cast<char*>(all_cards), 3* sizeof (Carta));
+    disco.write(reinterpret_cast<char*>(this->allCards), 3* sizeof (Carta));
     disco.close();
     qDebug()<<"Archivo generado"<<endl;
 }
@@ -38,7 +52,8 @@ void PagedMatrix::generar_archivo(Carta all_cards[3]){
 void PagedMatrix::llenar_array(){
     for(int i = 0; i<3; i++){
         allCards[i] = {i,i,i,false};
-        qDebug()<<allCards[i].row<<allCards[i].column<<allCards[i].type<<allCards[i].ganada<<endl;
+        qDebug()<<allCards[i].row<<allCards[i].column<<
+                  allCards[i].type<<allCards[i].ganada<<endl;
     }
 }
 
@@ -46,6 +61,49 @@ void PagedMatrix::update_array(int whichCard){
     allCards[whichCard] = {whichCard+3,whichCard+3,whichCard+3,false};
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//----RELATED TO OPCIÓN 1 para modelar la matriz en disco. No borrar aún, por si acaso.
+
+/**
 void PagedMatrix::llamar_matrizDisco(){
     writeFirst_matrizDisco({4,5,1,false});
     append_aDisco({8,8,8,false});
@@ -82,8 +140,6 @@ void PagedMatrix::modificar_disco(int cualCarta){
     leer2_matriz(4);
 
 }
-
-
 
 void PagedMatrix::leer2_matriz(int cartaNum){
     Carta c;
@@ -126,8 +182,4 @@ void PagedMatrix::writeFirst_matrizDisco(Carta cartaStr){
     disco.write(reinterpret_cast<char*>(&cartaStr), sizeof(cartaStr));
     disco.close();
 
-}
-
-void PagedMatrix::buscar_cartaEnDisco(){
-
-}
+}**/

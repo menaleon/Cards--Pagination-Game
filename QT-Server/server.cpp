@@ -13,7 +13,6 @@ server::server(QWidget *parent) :
     this->setStyleSheet("background-color: lightblue;");
     ui->plainTextEdit->setReadOnly(true);
 
-    ui->onDisc_cards->setPlainText("HOla");
     pagedMatrix = new PagedMatrix();
     server::fill_inMemory();
 
@@ -30,7 +29,6 @@ void server::conexion_nueva(){
 
 void server::leer_socket(){
 
-
     mensajes_recibidos++;
 
     QByteArray buffer;
@@ -38,16 +36,30 @@ void server::leer_socket(){
     _socket->read(buffer.data(), buffer.size());
 
     QString message = QString(buffer).toLatin1().data();
+    ui->plainTextEdit->appendPlainText(message);
 
     handle_mensaje(message, mensajes_recibidos);
 
-    ui->plainTextEdit->appendPlainText(message);  
+
 }
 
 void server::comparar_cartas(){
-    verificar_cartaInMemory();
-    //vector<Card> temp = pagedMatrix->leer_arrayArchivo(fila1, columna1, fila2, columna2, false);
-    //mostrar_cartasDisco(temp);
+    verificar_cartaInMemory(true); //verifica si está cargada la carta 2
+    size_t ind1 = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+    size_t ind2 = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
+
+    bool sameType = pagedMatrix->inMemoryCards.at(ind1).carta.type
+            == pagedMatrix->inMemoryCards.at(ind2).carta.type;
+
+    if(sameType){
+        enviar_al_cliente("1");
+    }else{
+        enviar_al_cliente("0");
+    }
+
+    // necesito los indices para luego comparar los tipos y así ya esta lista la mecanica del juego
+
+
 
 }
 
@@ -55,42 +67,58 @@ void server::enviar_imagen(){
 
 }
 
-void server::verificar_cartaInMemory(){
+size_t server::verificar_cartaInMemory(bool secondCard){
 
-    if(mensajes_recibidos % 2 == 0 && mensajes_recibidos > 2){
-
-        //pagedMatrix->leer_arrayArchivo(fila1, columna1, fila2, columna2, false);
-        size_t w = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
-        qDebug()<<"Buscar cartas result "<<w<<endl;
-        size_t q = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
-        qDebug()<<"Buscar cartas result "<<q<<endl;
+    size_t index;
+    if(secondCard){
+        index = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
+        return index;
 
     }else{
-        size_t e = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
-        qDebug()<<"Buscar cartas result "<<e<<endl;
+        index = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+        return index;
     }
 }
 
 void server::fill_inMemory(){
     pagedMatrix = new PagedMatrix();
-    pagedMatrix->llenar_array();
+    pagedMatrix->llenar_array(); // esto internamente llama a la funcion para escribir en el .bin
     pagedMatrix->leer_arrayArchivo(0,0,0,0, true);
     pagedMatrix->llenar_inMemory();
+    mostrar_cartasDisco();
 }
 
-void server::mostrar_cartasDisco(vector<Card> cargadas){
+void server::mostrar_cartasDisco(){
 
-    vector<Card> copy = cargadas;
+    vector<Card> discCopy = pagedMatrix->onDiscCards;
+    vector<Card> mem = pagedMatrix->inMemoryCards;
+    int hits = pagedMatrix->pageHits;
+    int faults = pagedMatrix->pageFaults;
 
-    for(size_t i = 0; i<cargadas.size(); i++){
-        cargadas.at(i).show();
-        qDebug()<<"Aqui irian las cartas cargadas tambien";
+    qDebug()<<"DISC CARDS----------MEMORY CARDS----------HITS----------FAULTS";
+    for(size_t i = 0; i<discCopy.size(); i++){
+
+        if(i>=mem.size()){
+            qDebug()<<discCopy.at(i).carta.row<<discCopy.at(i).carta.column<<
+                      discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada
+                       <<"       "<<endl;
+
+        }else{
+            if(i == 0){
+                qDebug()<<discCopy.at(i).carta.row<<discCopy.at(i).carta.column<<
+                          discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada<<
+                          "       "<<mem.at(i).carta.row<<mem.at(i).carta.column<<
+                          mem.at(i).carta.type<<mem.at(i).carta.ganada<<"        "<<
+                          hits<<"        "<<faults<<endl;
+            }else{
+                qDebug()<<discCopy.at(i).carta.row<<discCopy.at(i).carta.column<<
+                          discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada<<
+                          "       "<<mem.at(i).carta.row<<mem.at(i).carta.column<<
+                          mem.at(i).carta.type<<mem.at(i).carta.ganada<<endl;
+            }
+        }
     }
-    qDebug()<<"ONdisc and inMemory------------------------";
-
-    cargadas.clear();
 }
-
 
 void server::descomponer_indices(QString mensaje, int whichCard){
 
@@ -108,8 +136,13 @@ void server::descomponer_indices(QString mensaje, int whichCard){
 
 }
 
-
 void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
+
+    int hits;
+    int faults;
+
+    QString hitsString;
+    QString faultsString;
 
     llego_segundaCarta = mensajesRecibidos % 2 == 0 && mensajesRecibidos > 2;
 
@@ -121,25 +154,17 @@ void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
     }else if(llego_segundaCarta){       // mensaje recibido = segunda carta
         descomponer_indices(mensaje, 2);
-        //enviar_imagen();
-        //comparar_cartas();
-        qDebug()<<"Fila2 columna2"<<fila2<<columna2;
-        pagedMatrix->buscar_CartasCargadas(fila2, columna2);
-
+        enviar_imagen();
+        comparar_cartas();
+        mostrar_cartasDisco();
     }else{                              // mensaje recibido = primera carta
         descomponer_indices(mensaje, 1);
-        qDebug()<<"Fila1 columna1"<<fila1<<columna1;
-
-        pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+        verificar_cartaInMemory(false);
         enviar_imagen();
+        mostrar_cartasDisco();
     }
+
 }
-
-
-
-
-
-
 
 void server::on_send_clicked()
 {
@@ -157,7 +182,6 @@ void server::enviar_al_cliente(QString message){
     _socket->write(message.toLatin1().data(), message.size());
 
 }
-
 
 server::~server()
 {

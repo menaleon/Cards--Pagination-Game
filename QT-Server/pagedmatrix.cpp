@@ -9,58 +9,48 @@ PagedMatrix::PagedMatrix()
 
 
 bool PagedMatrix::cargar_carta(int fila, int col){
-    qDebug()<<"wwwwww"<<endl;
     for(size_t i = 0; i<onDiscCards.size(); i++){ //lo hago en un for porque no siempre serán 12 cartas en inMemory
         if(onDiscCards.at(i).carta.row == fila && onDiscCards.at(i).carta.column == col){
            inMemoryCards.pop_back();
            inMemoryCards.push_back(onDiscCards.at(i)); // carga la tarjeta a inMemory
-           qDebug()<<"Se ha cargado la carta"<<endl;
+           //qDebug()<<"Se ha cargado la carta"<<endl;
            pageFaults++;
            return true;
         }
-        //qDebug()<<onDiscCards.at(i).carta.row<<endl;
-        //qDebug()<<onDiscCards.at(i).carta.column<<endl;
     }
-}
 
+    return false;
+}
 
 size_t PagedMatrix::buscar_CartasCargadas(int fila, int col){
 
     bool isLoaded = false;
-    //qDebug()<<"Inside buscar cartas"<<endl;
 
     if(fila == -1 && col == -1){ //solo me piden buscar una carta
         qDebug()<<"solo me pidieron una carta"<<endl;
-
         return 50;
     }
 
-    //qDebug()<<"In memory size"<<inMemoryCards.size();
 
     for(size_t i = 0; i<inMemoryCards.size(); i++){ //lo hago en un for porque no siempre serán 12 cartas en inMemory
-
-
         if(inMemoryCards.at(i).carta.row == fila && inMemoryCards.at(i).carta.column == col){
             isLoaded = true; // si encuentra la carta entonces sí estaba cargada en memoria
             pageHits++;
-            qDebug()<<"La Carta sí estaba cargada"<<endl;
+            //qDebug()<<"La Carta sí estaba cargada"<<endl;
             return i;
         }
-
-        //qDebug()<<inMemoryCards.at(i).carta.row<<endl;
-        //qDebug()<<inMemoryCards.at(i).carta.column<<endl;
     }
 
-    if( !isLoaded){ // si no está cargada, la carga!
+    if( !isLoaded){ // si no está cargada, la carga y devuelve su index
         cargar_carta(fila, col);
-
-        return 13;
+        for(size_t i = 0; i<inMemoryCards.size(); i++){ //lo hago en un for porque no siempre serán 12 cartas en inMemory
+            if(inMemoryCards.at(i).carta.row == fila && inMemoryCards.at(i).carta.column == col){
+                return i;
+            }
+        }
     }
-
     return 100; // la carta no está cargada
 }
-
-
 
 vector<int> PagedMatrix::random_int(size_t vectorSize){
     int num;
@@ -84,10 +74,6 @@ vector<Card> PagedMatrix::leer_arrayArchivo(int f1, int c1, int f2, int c2, bool
         onDiscCards.push_back(*temporal);
         free(temporal);
     }
-
-
-    //size_t ind1 = buscar_CartasCargadas(onDiscCards, f1, c1);
-    //size_t ind2 = buscar_CartasCargadas(onDiscCards, f2, c2);
     return onDiscCards;
 }
 
@@ -104,12 +90,10 @@ void PagedMatrix::llenar_inMemory(){ // al iniciar el juego lleno el vector con 
         randIndexes = random_int(useful_size);
     }
 
-    qDebug()<<"Llenando inMemory vector:pagedMatrix ----------------------------"<<endl;
-
     for(size_t sizeIndexes= 0; sizeIndexes<randIndexes.size(); sizeIndexes++){
         ind = randIndexes.at(sizeIndexes); // me devuelve numeros que fueron creados aleatoriamente
         inMemoryCards.push_back(onDiscCards.at(ind)); //carga esas tarjetas en memoria
-        inMemoryCards.at(sizeIndexes).show(); // muestra las tarjetas en memoria
+        //inMemoryCards.at(sizeIndexes).show(); // muestra las tarjetas en memoria
     }
 }
 
@@ -139,8 +123,6 @@ void PagedMatrix::llenar_array(){ //esto es para definir las cartas que usaremos
         for(int fila = 0; fila<6; fila++){
 
             allCards[index] = {fila,col,0,false};
-            //qDebug()<<allCards[index].row<<allCards[index].column<<
-            //allCards[index].type<<allCards[index].ganada<<endl;
             index++;
         }
     }

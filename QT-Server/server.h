@@ -29,9 +29,9 @@ private slots:
     void enviar_al_cliente(QString message);
     void comparar_cartas();
     void enviar_imagen();
-    void mostrar_cartasDisco(vector<Card> cargadas);
+    void mostrar_cartasDisco();
     void fill_inMemory();
-    void verificar_cartaInMemory();
+    size_t verificar_cartaInMemory(bool secondCard);
 
 
 private:

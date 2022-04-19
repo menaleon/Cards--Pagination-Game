@@ -37,14 +37,18 @@ public:
     bool cargar_carta(int fila, int col);
 
 
-private:
-    fstream disco;
-    Carta allCards[36];
-
     int pageHits = 0;
     int pageFaults = 0;
     vector<Card> onDiscCards;
     vector<Card> inMemoryCards;
+
+private:
+    fstream disco;
+    Carta allCards[36];
+
+
+
+
 
 };
 

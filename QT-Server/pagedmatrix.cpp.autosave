@@ -9,7 +9,6 @@ PagedMatrix::PagedMatrix()
 
 
 bool PagedMatrix::cargar_carta(int fila, int col){
-    qDebug()<<"wwwwww"<<endl;
     for(size_t i = 0; i<onDiscCards.size(); i++){ //lo hago en un for porque no siempre serán 12 cartas en inMemory
         if(onDiscCards.at(i).carta.row == fila && onDiscCards.at(i).carta.column == col){
            inMemoryCards.pop_back();
@@ -18,8 +17,6 @@ bool PagedMatrix::cargar_carta(int fila, int col){
            pageFaults++;
            return true;
         }
-        //qDebug()<<onDiscCards.at(i).carta.row<<endl;
-        //qDebug()<<onDiscCards.at(i).carta.column<<endl;
     }
 }
 
@@ -46,9 +43,6 @@ size_t PagedMatrix::buscar_CartasCargadas(int fila, int col){
             qDebug()<<"La Carta sí estaba cargada"<<endl;
             return i;
         }
-
-        //qDebug()<<inMemoryCards.at(i).carta.row<<endl;
-        //qDebug()<<inMemoryCards.at(i).carta.column<<endl;
     }
 
     if( !isLoaded){ // si no está cargada, la carga!
@@ -84,10 +78,6 @@ vector<Card> PagedMatrix::leer_arrayArchivo(int f1, int c1, int f2, int c2, bool
         onDiscCards.push_back(*temporal);
         free(temporal);
     }
-
-
-    //size_t ind1 = buscar_CartasCargadas(onDiscCards, f1, c1);
-    //size_t ind2 = buscar_CartasCargadas(onDiscCards, f2, c2);
     return onDiscCards;
 }
 

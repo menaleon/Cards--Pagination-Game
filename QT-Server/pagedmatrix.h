@@ -29,17 +29,20 @@ public:
     void escribir_archivo(Carta arrayCartas[36]);
     void llenar_array();
     void update_array(int whichCard);
-    vector<Card> leer_arrayArchivo(int f1, int c1, int f2, int c2);
-    int buscar_CartasCargadas(vector<Card> cargadas, int fila, int col);
+    vector<Card> leer_arrayArchivo(int f1, int c1, int f2, int c2, bool firstTime);
+    size_t buscar_CartasCargadas(int fila, int col);
     vector<int> random_int(size_t vectorSize);
     void llenar_inMemory();
     size_t verificar_ganadas();
+    bool cargar_carta(int fila, int col);
 
 
 private:
     fstream disco;
     Carta allCards[36];
 
+    int pageHits = 0;
+    int pageFaults = 0;
     vector<Card> onDiscCards;
     vector<Card> inMemoryCards;
 

@@ -31,9 +31,11 @@ private slots:
     void enviar_imagen();
     void mostrar_cartasDisco(vector<Card> cargadas);
     void fill_inMemory();
+    void verificar_cartaInMemory();
 
 
 private:
+
     Ui::server *ui;
     QTcpServer* _server;
     QTcpSocket* _socket;

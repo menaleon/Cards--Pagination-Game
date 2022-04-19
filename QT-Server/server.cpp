@@ -12,9 +12,10 @@ server::server(QWidget *parent) :
     ui->setupUi(this);
     this->setStyleSheet("background-color: lightblue;");
     ui->plainTextEdit->setReadOnly(true);
-    ui->onDisc_cards->setPlainText("HOla");
 
-    fill_inMemory();
+    ui->onDisc_cards->setPlainText("HOla");
+    pagedMatrix = new PagedMatrix();
+    server::fill_inMemory();
 
     _server = new QTcpServer(this);
     _server->listen(QHostAddress::Any, 4050);
@@ -44,14 +45,37 @@ void server::leer_socket(){
 }
 
 void server::comparar_cartas(){
-    vector<Card> temp = pagedMatrix->leer_arrayArchivo(2,3,4,5);
-
-    mostrar_cartasDisco(temp);
+    verificar_cartaInMemory();
+    //vector<Card> temp = pagedMatrix->leer_arrayArchivo(fila1, columna1, fila2, columna2, false);
+    //mostrar_cartasDisco(temp);
 
 }
 
 void server::enviar_imagen(){
 
+}
+
+void server::verificar_cartaInMemory(){
+
+    if(mensajes_recibidos % 2 == 0 && mensajes_recibidos > 2){
+
+        //pagedMatrix->leer_arrayArchivo(fila1, columna1, fila2, columna2, false);
+        size_t w = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+        qDebug()<<"Buscar cartas result "<<w<<endl;
+        size_t q = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
+        qDebug()<<"Buscar cartas result "<<q<<endl;
+
+    }else{
+        size_t e = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+        qDebug()<<"Buscar cartas result "<<e<<endl;
+    }
+}
+
+void server::fill_inMemory(){
+    pagedMatrix = new PagedMatrix();
+    pagedMatrix->llenar_array();
+    pagedMatrix->leer_arrayArchivo(0,0,0,0, true);
+    pagedMatrix->llenar_inMemory();
 }
 
 void server::mostrar_cartasDisco(vector<Card> cargadas){
@@ -63,8 +87,10 @@ void server::mostrar_cartasDisco(vector<Card> cargadas){
         qDebug()<<"Aqui irian las cartas cargadas tambien";
     }
     qDebug()<<"ONdisc and inMemory------------------------";
+
     cargadas.clear();
 }
+
 
 void server::descomponer_indices(QString mensaje, int whichCard){
 
@@ -82,12 +108,6 @@ void server::descomponer_indices(QString mensaje, int whichCard){
 
 }
 
-void server::fill_inMemory(){
-    pagedMatrix = new PagedMatrix();
-    pagedMatrix->llenar_array();
-    pagedMatrix->leer_arrayArchivo(0,0,0,0);
-    pagedMatrix->llenar_inMemory();
-}
 
 void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
@@ -101,19 +121,21 @@ void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
     }else if(llego_segundaCarta){       // mensaje recibido = segunda carta
         descomponer_indices(mensaje, 2);
-        enviar_imagen();
-        comparar_cartas();
+        //enviar_imagen();
+        //comparar_cartas();
+        qDebug()<<"Fila2 columna2"<<fila2<<columna2;
+        pagedMatrix->buscar_CartasCargadas(fila2, columna2);
 
     }else{                              // mensaje recibido = primera carta
         descomponer_indices(mensaje, 1);
+        qDebug()<<"Fila1 columna1"<<fila1<<columna1;
+
+        pagedMatrix->buscar_CartasCargadas(fila1, columna1);
         enviar_imagen();
     }
 }
 
-server::~server()
-{
-    delete ui;
-}
+
 
 
 
@@ -134,4 +156,10 @@ void server::on_send_clicked()
 void server::enviar_al_cliente(QString message){
     _socket->write(message.toLatin1().data(), message.size());
 
+}
+
+
+server::~server()
+{
+    delete ui;
 }

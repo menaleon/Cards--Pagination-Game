@@ -1,60 +1,111 @@
 #include "pagedmatrix.h"
 
+int cont_llenadoInMemory = 0;
 
 PagedMatrix::PagedMatrix()
 {
 
 }
 
+int PagedMatrix::buscar_CartasCargadas(vector<Card> cargadas, int fila, int col){
+    for(int i = 0; i<36; i++){
+        if(onDiscCards.at(i).carta.row == fila && onDiscCards.at(i).carta.column == col){
 
-void PagedMatrix::leer_arrayArchivo(){
+            return i;
+        }
 
-    //investigar luego si los punteros creados se borran o no
-    // si mal no recuerdo sí se borran porque al terminar
-    //   --->   se borra todo el stack frame de esta función
+    }
+}
 
-    Carta temp[3];
 
+vector<int> PagedMatrix::random_int(size_t vectorSize){
+    int num;
+    vector<int> randIndex;
+
+    for(size_t cont = 1; cont <=vectorSize; cont++){
+        num = 0 + rand()%(36 + 1 - 0);
+        randIndex.push_back(num);
+    }
+    return randIndex;
+}
+
+vector<Card> PagedMatrix::leer_arrayArchivo(int f1, int c1, int f2, int c2){
+    Carta temp[36];
     disco.open("cartas2.bin", ios::in | ios::binary);
-
-    disco.read(reinterpret_cast<char*>(temp), 3* sizeof(Carta));
-
+    disco.read(reinterpret_cast<char*>(temp), 36* sizeof(Carta));
     disco.close();
 
     for(Carta& c : temp){
         Card* temporal = new Card(c.row, c.column, c.type, c.ganada);
-        cargadas.push_back(*temporal);
-        qDebug()<<"Leí"<<disco.tellg()<<c.row<<c.column<<c.type<<c.ganada<<endl;
-
-        free(temporal); // por si acaso
+        onDiscCards.push_back(*temporal);
+        free(temporal);
     }
+    //Esto es para lidiar después con saber cuál añado al vector de tarjetas cargadas
+    //La idea es hacer un random para que al inicio cargue 12 cartas al otro vector inMemory
 
+    //int ind1 = buscar_CartasCargadas(onDiscCards, f1, c1);
+    //int ind2 = buscar_CartasCargadas(onDiscCards, f2, c2);
+    //Card* tarjeta1 = new Card(onDiscCards.at(ind1).carta);
+    //Card* tarjeta2 = new Card(onDiscCards.at(ind2).carta);
 
-
-   for(int i = 0; i< cargadas.size(); i++){
-       cargadas.at(i).show();
-   }
-
-   cargadas.clear();
-   //free(temp); investigar esto
-
+    return onDiscCards;
 }
 
-void PagedMatrix::escribir_archivo(Carta all_cards[3]){
+void PagedMatrix::llenar_inMemory(){
+    vector<int> randIndexes;
+    long ind;
 
 
+    if(cont_llenadoInMemory == 0){
+         randIndexes = random_int(12);
+
+    }else{
+        size_t useful_size = verificar_ganadas();
+        randIndexes = random_int(useful_size);
+    }
+
+    qDebug()<<"Filling inMemory ----------------------------"<<endl;
+
+    for(size_t sizeIndexes= 0; sizeIndexes<randIndexes.size(); sizeIndexes++){
+        ind = randIndexes.at(sizeIndexes);
+        inMemoryCards.push_back(onDiscCards.at(ind));
+        inMemoryCards.at(sizeIndexes).show();
+    }
+}
+
+size_t PagedMatrix::verificar_ganadas(){
+    size_t checkedSize = 36;
+    for(size_t cont = 0; cont <onDiscCards.size(); cont++){
+        if(onDiscCards.at(cont).carta.ganada == true){
+            checkedSize--;
+        }
+    }
+    return checkedSize;
+}
+
+void PagedMatrix::escribir_archivo(Carta arrayCartas[36]){
     disco.open("cartas2.bin", ios::binary | ios::out);
-    disco.write(reinterpret_cast<char*>(this->allCards), 3* sizeof (Carta));
+    disco.write(reinterpret_cast<char*>(arrayCartas), 36 * sizeof (Carta));
     disco.close();
-    qDebug()<<"Archivo generado"<<endl;
+    qDebug()<<"Archivo binario con 36 cartas generado-------"<<endl;
 }
 
 void PagedMatrix::llenar_array(){
-    for(int i = 0; i<3; i++){
-        allCards[i] = {i,i,i,false};
-        qDebug()<<allCards[i].row<<allCards[i].column<<
-                  allCards[i].type<<allCards[i].ganada<<endl;
+
+    int index = 0;
+
+    for(int col = 0; col<6; col++){
+
+        for(int fila = 0; fila<6; fila++){
+
+            allCards[index] = {fila,col,0,false};
+            //qDebug()<<allCards[index].row<<allCards[index].column<<
+            //allCards[index].type<<allCards[index].ganada<<endl;
+            index++;
+        }
     }
+
+    escribir_archivo(allCards);
 }
 
 void PagedMatrix::update_array(int whichCard){

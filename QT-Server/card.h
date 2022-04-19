@@ -16,6 +16,7 @@ class Card
 {
 public:
     Card(int row, int col, int type, int ganada);
+    Card(Carta structCarta);
 
 
     Carta carta;
@@ -25,6 +26,10 @@ public:
 
 
     void show();
+    int getRow();
+    int getColumn();
+    int getType();
+    int getGanada();
 };
 
 #endif // CARD_H

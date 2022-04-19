@@ -27,6 +27,11 @@ private slots:
     void descomponer_indices(QString mensaje, int whichCard);
     void on_send_clicked();
     void enviar_al_cliente(QString message);
+    void comparar_cartas();
+    void enviar_imagen();
+    void mostrar_cartasDisco(vector<Card> cargadas);
+    void fill_inMemory();
+
 
 private:
     Ui::server *ui;

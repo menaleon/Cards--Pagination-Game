@@ -12,8 +12,9 @@ server::server(QWidget *parent) :
     ui->setupUi(this);
     this->setStyleSheet("background-color: lightblue;");
     ui->plainTextEdit->setReadOnly(true);
+    ui->onDisc_cards->setPlainText("HOla");
 
-    pagedMatrix = new PagedMatrix();
+    fill_inMemory();
 
     _server = new QTcpServer(this);
     _server->listen(QHostAddress::Any, 4050);
@@ -42,6 +43,28 @@ void server::leer_socket(){
     ui->plainTextEdit->appendPlainText(message);  
 }
 
+void server::comparar_cartas(){
+    vector<Card> temp = pagedMatrix->leer_arrayArchivo(2,3,4,5);
+
+    mostrar_cartasDisco(temp);
+
+}
+
+void server::enviar_imagen(){
+
+}
+
+void server::mostrar_cartasDisco(vector<Card> cargadas){
+
+    vector<Card> copy = cargadas;
+
+    for(size_t i = 0; i<cargadas.size(); i++){
+        cargadas.at(i).show();
+        qDebug()<<"Aqui irian las cartas cargadas tambien";
+    }
+    qDebug()<<"ONdisc and inMemory------------------------";
+    cargadas.clear();
+}
 
 void server::descomponer_indices(QString mensaje, int whichCard){
 
@@ -59,6 +82,13 @@ void server::descomponer_indices(QString mensaje, int whichCard){
 
 }
 
+void server::fill_inMemory(){
+    pagedMatrix = new PagedMatrix();
+    pagedMatrix->llenar_array();
+    pagedMatrix->leer_arrayArchivo(0,0,0,0);
+    pagedMatrix->llenar_inMemory();
+}
+
 void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
     llego_segundaCarta = mensajesRecibidos % 2 == 0 && mensajesRecibidos > 2;
@@ -71,8 +101,12 @@ void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
     }else if(llego_segundaCarta){       // mensaje recibido = segunda carta
         descomponer_indices(mensaje, 2);
+        enviar_imagen();
+        comparar_cartas();
+
     }else{                              // mensaje recibido = primera carta
         descomponer_indices(mensaje, 1);
+        enviar_imagen();
     }
 }
 
@@ -81,29 +115,19 @@ server::~server()
     delete ui;
 }
 
+
+
+
+
 void server::on_send_clicked()
 {
 
-    //enviar_al_cliente(ui->lineEdit->text());
+    enviar_al_cliente(ui->lineEdit->text());
 
     ui->plainTextEdit->appendPlainText(ui->lineEdit->text());
     ui->lineEdit->clear();
 
     //pagedMatrix->llamar_matrizDisco(); OPCION 1
-
-    //OPCION 2
-
-    pagedMatrix->llenar_array();
-    Carta all_Cards[3] = {{1,1,1,false},{2,2,2,false},{3,3,3,false}};
-    Carta all_Cards2[3] = {{1,1,1,true},{2,2,2,false},{3,3,3,false}};
-
-    pagedMatrix->escribir_archivo(all_Cards);
-    pagedMatrix->leer_arrayArchivo();
-
-    pagedMatrix->update_array(2);
-
-    pagedMatrix->escribir_archivo(all_Cards2);
-    pagedMatrix->leer_arrayArchivo();
 
 }
 

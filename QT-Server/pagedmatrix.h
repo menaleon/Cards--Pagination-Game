@@ -15,21 +15,23 @@ class PagedMatrix
 public:
     PagedMatrix();
     //opcion 1: hacer structs tarjeta y escribir cada una en el archivo binario
-    //void llamar_matrizDisco();
-    //void leer_matrizDisco(int howManyStructs);
-    //void leer2_matriz(int cartaNum);
-    //void writeFirst_matrizDisco(Carta cartaStr);
-    //void append_aDisco(Carta cartStr);
-    //void modificar_disco(int cualCarta);
-    //void write_in_position(Carta cartaStr, int pos);
+    /**
+    void llamar_matrizDisco();
+    void leer_matrizDisco(int howManyStructs);
+    void leer2_matriz(int cartaNum);
+    void writeFirst_matrizDisco(Carta cartaStr);
+    void append_aDisco(Carta cartStr);
+    void modificar_disco(int cualCarta);
+    void write_in_position(Carta cartaStr, int pos);
+    **/
 
 
     //-----------opcion 2: usar un array de structs tarjeta y escribir ese array
     // en el archivo binario cada vez que se modifique
     void escribir_archivo(Carta arrayCartas[36]);
     void llenar_array();
-    void update_array(int whichCard);
-    vector<Card> leer_arrayArchivo(int f1, int c1, int f2, int c2, bool firstTime);
+    void update_array(int f1, int c1, int f2, int c2);
+    vector<Card> leer_arrayArchivo();
     size_t buscar_CartasCargadas(int fila, int col);
     vector<int> random_int(size_t vectorSize);
     void llenar_inMemory();

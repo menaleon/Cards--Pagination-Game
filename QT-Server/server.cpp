@@ -13,8 +13,9 @@ server::server(QWidget *parent) :
     this->setStyleSheet("background-color: lightblue;");
     ui->plainTextEdit->setReadOnly(true);
 
-    pagedMatrix = new PagedMatrix();
-    server::fill_inMemory();
+
+    //pagedMatrix->llamar_matrizDisco(); opcion 1
+    server::fill_inMemory(); // opcion 2
 
     _server = new QTcpServer(this);
     _server->listen(QHostAddress::Any, 4050);
@@ -43,24 +44,24 @@ void server::leer_socket(){
 
 }
 
-void server::comparar_cartas(){
-    verificar_cartaInMemory(true); //verifica si está cargada la carta 2
-    size_t ind1 = pagedMatrix->buscar_CartasCargadas(fila1, columna1);
+void server::comparar_cartas(size_t index1){
+
+    //verifica si está cargada la carta 2
     size_t ind2 = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
 
-    bool sameType = pagedMatrix->inMemoryCards.at(ind1).carta.type
+    bool sameType = pagedMatrix->inMemoryCards.at(index1).carta.type
             == pagedMatrix->inMemoryCards.at(ind2).carta.type;
 
     if(sameType){
+        pagedMatrix->onDiscCards.clear();
+        pagedMatrix->inMemoryCards.clear();
+        pagedMatrix->update_array(fila1, columna1, fila2, columna2);
         enviar_al_cliente("1");
     }else{
         enviar_al_cliente("0");
     }
 
     // necesito los indices para luego comparar los tipos y así ya esta lista la mecanica del juego
-
-
-
 }
 
 void server::enviar_imagen(){
@@ -70,6 +71,7 @@ void server::enviar_imagen(){
 size_t server::verificar_cartaInMemory(bool secondCard){
 
     size_t index;
+
     if(secondCard){
         index = pagedMatrix->buscar_CartasCargadas(fila2, columna2);
         return index;
@@ -83,7 +85,7 @@ size_t server::verificar_cartaInMemory(bool secondCard){
 void server::fill_inMemory(){
     pagedMatrix = new PagedMatrix();
     pagedMatrix->llenar_array(); // esto internamente llama a la funcion para escribir en el .bin
-    pagedMatrix->leer_arrayArchivo(0,0,0,0, true);
+    pagedMatrix->leer_arrayArchivo();
     pagedMatrix->llenar_inMemory();
     mostrar_cartasDisco();
 }
@@ -95,13 +97,15 @@ void server::mostrar_cartasDisco(){
     int hits = pagedMatrix->pageHits;
     int faults = pagedMatrix->pageFaults;
 
-    qDebug()<<"DISC CARDS----------MEMORY CARDS----------HITS----------FAULTS";
+    qDebug()<<"Mem size "<<mem.size()<<" Disc size"<<discCopy.size();
+
+    qDebug()<<"DISC CARDS----------MEMORY CARDS----------HITS----------FAULTS"<<endl;
     for(size_t i = 0; i<discCopy.size(); i++){
 
         if(i>=mem.size()){
             qDebug()<<discCopy.at(i).carta.row<<discCopy.at(i).carta.column<<
                       discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada
-                       <<"       "<<endl;
+                       <<"       ";
 
         }else{
             if(i == 0){
@@ -109,12 +113,12 @@ void server::mostrar_cartasDisco(){
                           discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada<<
                           "       "<<mem.at(i).carta.row<<mem.at(i).carta.column<<
                           mem.at(i).carta.type<<mem.at(i).carta.ganada<<"        "<<
-                          hits<<"        "<<faults<<endl;
+                          hits<<"        "<<faults;
             }else{
                 qDebug()<<discCopy.at(i).carta.row<<discCopy.at(i).carta.column<<
                           discCopy.at(i).carta.type<<discCopy.at(i).carta.ganada<<
                           "       "<<mem.at(i).carta.row<<mem.at(i).carta.column<<
-                          mem.at(i).carta.type<<mem.at(i).carta.ganada<<endl;
+                          mem.at(i).carta.type<<mem.at(i).carta.ganada;
             }
         }
     }
@@ -138,12 +142,6 @@ void server::descomponer_indices(QString mensaje, int whichCard){
 
 void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
 
-    int hits;
-    int faults;
-
-    QString hitsString;
-    QString faultsString;
-
     llego_segundaCarta = mensajesRecibidos % 2 == 0 && mensajesRecibidos > 2;
 
     if(mensajesRecibidos == 1){         // mensaje recibido = nombre player 1
@@ -155,11 +153,12 @@ void server::handle_mensaje(QString mensaje, int mensajesRecibidos){
     }else if(llego_segundaCarta){       // mensaje recibido = segunda carta
         descomponer_indices(mensaje, 2);
         enviar_imagen();
-        comparar_cartas();
+        comparar_cartas(this->index1);
         mostrar_cartasDisco();
+
     }else{                              // mensaje recibido = primera carta
         descomponer_indices(mensaje, 1);
-        verificar_cartaInMemory(false);
+        index1 = verificar_cartaInMemory(false);
         enviar_imagen();
         mostrar_cartasDisco();
     }

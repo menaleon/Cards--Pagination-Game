@@ -27,7 +27,7 @@ private slots:
     void descomponer_indices(QString mensaje, int whichCard);
     void on_send_clicked();
     void enviar_al_cliente(QString message);
-    void comparar_cartas();
+    void comparar_cartas(size_t index1);
     void enviar_imagen();
     void mostrar_cartasDisco();
     void fill_inMemory();
@@ -49,6 +49,8 @@ private:
 
     int columna2;
     int fila2;
+
+    size_t index1;
 
     PagedMatrix* pagedMatrix;
 };

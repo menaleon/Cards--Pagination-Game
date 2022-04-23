@@ -19,10 +19,7 @@ Card::Card(Carta structCarta)
 
     //this->image = "SoyUnaImagen";
 }
-void Card::show(){
-    qDebug()<<"SHOW-CARD: "<<carta.row<<carta.column<<carta.type<<carta.ganada<<endl;
 
-}
 
 int Card::getRow(){
     return this->carta.row;

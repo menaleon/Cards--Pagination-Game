@@ -6,6 +6,10 @@
 #include<QTcpSocket>
 #include "pagedmatrix.h"
 #include "card.h"
+#include <string>
+#include<string.h>
+#include<iostream>
+#include <QDebug>
 
 
 namespace Ui {
@@ -23,16 +27,20 @@ public:
 private slots:
     void conexion_nueva();
     void leer_socket();
-    void handle_mensaje(QString mensaje, int mensajesRecibidos);
-    void descomponer_indices(QString mensaje, int whichCard);
-    void on_send_clicked();
     void enviar_al_cliente(QString message);
+
+    void on_send_clicked();
+
+    void handle_mensaje(QString mensaje, int mensajesRecibidos); 
+    void descomponer_indices(QString mensaje, int whichCard);
     void comparar_cartas(size_t index1);
     void enviar_imagen();
     void mostrar_cartasDisco();
-    void fill_inMemory();
+    void create_inMemory();
     size_t verificar_cartaInMemory(bool secondCard);
 
+    void cambiar_turnoJugador(bool firstTime);
+    void manejar_puntajes(bool matchedCards, int who, int whichPowerUp);
 
 private:
 
@@ -40,19 +48,23 @@ private:
     QTcpServer* _server;
     QTcpSocket* _socket;
 
+    PagedMatrix* pagedMatrix;
+
     int mensajes_recibidos = 0;
-    int player1 = 1;
     bool llego_segundaCarta;
+
+    int player1 = 1;
+    int curr_player = 0;
+    int p1_points;
+    int p2_points;
 
     int columna1;
     int fila1;
-
     int columna2;
     int fila2;
-
     size_t index1;
 
-    PagedMatrix* pagedMatrix;
+
 };
 
 #endif // SERVER_H

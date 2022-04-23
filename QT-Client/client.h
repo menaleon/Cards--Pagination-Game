@@ -9,6 +9,7 @@
 #include<QPushButton>
 #include "ui_client.h"
 #include "handler.h"
+
 using namespace std;
 
 namespace Ui {
@@ -20,13 +21,14 @@ class client : public QMainWindow
     Q_OBJECT
 
 public:
+
     explicit client(QWidget *parent = nullptr);
     ~client();
 
-    bool set_TurnoActual(int player);
     Ui::client *ui;
 
 private slots:
+
     void crear_interfaz_inicial();
     void crear_interfaz_juego();
     void rellenar_matrizBotones();
@@ -51,11 +53,9 @@ private:
     int counter = 0;
     int counter_cartasPresionadas = 0;
     int cartasGanadas = 0;
-    int player1 = 1;
+    int player = 1;
 
     Ui::client interfaz;
-
-
 
 };
 
